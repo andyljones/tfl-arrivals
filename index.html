@@ -3,12 +3,17 @@
   <script src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js'></script>
   <script src='sprintf.min.js'></script>
   <script>
+  var STATION_ID = '940GZZLUBXN'
+
   $(document).ready(run);
 
   function run() {
     fetch_and_display()
-    setInterval(fetch_and_display, 30000)
-    setInterval(increment_refresh_counter, 1000)
+
+    fetch_interval_id = setInterval(fetch_and_display, 30*1000)
+    setInterval(function () { clearInterval(fetch_interval_id) }, 60*1000)
+
+    setInterval(increment_refresh_counter, 1*1000)
     console.log($('#refresh_count'))
 
   }
@@ -22,7 +27,7 @@
   function fetch_and_display() {
     $.ajax({
         type: 'GET',
-        url: 'https://api.tfl.gov.uk/StopPoint/940GZZLUBXN/arrivals',
+        url: sprintf('https://api.tfl.gov.uk/StopPoint/%s/arrivals', STATION_ID),
         dataType: 'JSON',
         success: display
        });
@@ -51,10 +56,14 @@
 </head>
 
 <body>
-  <p>Live arrivals at Brixton station.</p>
+  <p>Live arrivals at Brixton underground station.</p>
   <div id='main'></div>
   <p>Last refreshed <span id=refresh_count></span> seconds ago.</p>
 
-  <p>Should refresh every 30 seconds.</p>
+  <p>Should refresh every 30 seconds for 1 hour, at which point the page will need to be refreshed.
+    This reduces the load on the Tfl API.
+  </p>
+
+  <p>Powered by <a href="https://api.tfl.gov.uk/">the TfL API</a></p>
 
 </body>
