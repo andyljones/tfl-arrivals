@@ -1,0 +1,60 @@
+
+<head>
+  <script src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js'></script>
+  <script src='sprintf.min.js'></script>
+  <script>
+  $(document).ready(run);
+
+  function run() {
+    fetch_and_display()
+    setInterval(fetch_and_display, 30000)
+    setInterval(increment_refresh_counter, 1000)
+    console.log($('#refresh_count'))
+
+  }
+
+  var refresh_counter = 0
+  function increment_refresh_counter() {
+    refresh_counter++
+    $('#refresh_count').text(refresh_counter)
+  }
+
+  function fetch_and_display() {
+    $.ajax({
+        type: 'GET',
+        url: 'https://api.tfl.gov.uk/StopPoint/940GZZLUBXN/arrivals',
+        dataType: 'JSON',
+        success: display
+       });
+  }
+
+  function display(json) {
+    json.sort(function (a, b) { return (a.timeToStation > b.timeToStation) })
+
+    $('#main').empty()
+    refresh_counter = 0
+
+    for (var i = 0; i < json.length; i++) {
+      var obj = json[i]
+      var time = new Date(1000*10*Math.round(obj.timeToStation/10))
+      var platform = obj.platformName.split(' - ')[1]
+      $('#main').append(sprintf('<div>%2dm%02ds - %s</div>', time.getMinutes(), time.getSeconds(), platform))
+    }
+  }
+  </script>
+
+  <style>
+  body {
+    font-family: sans-serif
+  }
+  </style>
+</head>
+
+<body>
+  <p>Live arrivals at Brixton station.</p>
+  <div id='main'></div>
+  <p>Last refreshed <span id=refresh_count></span> seconds ago.</p>
+
+  <p>Should refresh every 30 seconds.</p>
+
+</body>
